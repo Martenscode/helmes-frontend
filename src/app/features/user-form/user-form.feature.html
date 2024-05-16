@@ -1,0 +1,65 @@
+<form [formGroup]="userForm" (ngSubmit)="onSubmit()">
+    <p>Please enter your name and pick the Sectors you are currently involved in.</p>
+    <div class="formElement">
+      <label for="name">Name: * </label>
+      <input type="text" id="name" formControlName="name">
+      @if (name.invalid && name.touched) {
+        <div>
+          <span class="formErrMsg">
+            @if (name.errors?.['required']) {
+              Name is required
+            } @else if (name.errors?.['maxlength']) {
+              Name is too long
+            }
+          </span>
+        </div>
+      }
+    </div>
+    <div class="formElement">
+      <label for="sectors">Sectors: * </label>
+      @if (fetchedSectors.length === 0) {
+        <span aria-label="Loading">Loading sectors...</span>
+      } @else {
+        <select id="sectors" multiple size="5" formControlName="sectors" >
+          @for (sector of fetchedSectors; track sector.id) {
+            <ng-container *ngTemplateOutlet="renderSector; context: {$implicit: sector, indentationLevel: 0}"></ng-container>
+          }
+        </select>
+      }
+      @if (sectors.invalid && sectors.touched) {
+        <div>
+          <span class="formErrMsg">
+            @if (sectors.errors?.['required']) {
+              Sector is required
+            } @else if (sectors.errors?.['maxArrayLength']) {
+              Unsupported amount of sectors selected
+            }
+          </span>
+        </div>
+      }
+    </div>
+    <div class="formElement">
+      <label for="agreeCheckbox">Agree to terms * </label>
+      <input type="checkbox" id="agreeCheckbox" formControlName="terms">
+      @if (terms.invalid && terms.touched) {
+        <div>
+          <span class="formErrMsg">
+            @if (terms.errors?.['requiredTrue']) {
+              Please agree to terms
+            }
+          </span>
+        </div>
+      }
+    </div>
+    <button type="submit" (click)="userForm.markAllAsTouched()">Save</button>
+</form>
+
+<!--Template to render all sectors and its children dynamically-->
+<ng-template #renderSector let-item let-indentationLevel="indentationLevel">
+  <option id="sectorOption" [value]="item.id" [style.padding-left.px]="indentationLevel * 20">
+    {{ item.name }}
+  </option>
+  @for (child of item.children; track child.id) {
+    <ng-container *ngTemplateOutlet="renderSector; context: {$implicit: child, indentationLevel: indentationLevel + 1}"></ng-container>
+  }
+</ng-template>
